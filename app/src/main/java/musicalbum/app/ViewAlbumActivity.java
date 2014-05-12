@@ -1,5 +1,7 @@
 package musicalbum.app;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -15,13 +17,15 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.io.File;
 import java.util.ArrayList;
 
 
 public class ViewAlbumActivity extends ActionBarActivity {
 
     private GestureDetectorCompat mDetector;
-    private ArrayList<String> images = new ArrayList<String>();
+    private ArrayList<Bitmap> images = new ArrayList<Bitmap>();
     private int image_index;
     ImageView displayed_image;
 
@@ -32,20 +36,19 @@ public class ViewAlbumActivity extends ActionBarActivity {
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
         //Load images here
-        images.add("@drawable/ic_launcher");
-        images.add("@drawable/flag");
-        images.add("@drawable/boat");
         image_index = 0;
 
         Bundle extras = getIntent().getExtras();
-        String albumTitle = extras.getString(android.content.Intent.EXTRA_TEXT);
-        image_index = Integer.parseInt(albumTitle);
-        image_index = image_index % 3;
+        String imageDirName = extras.getString(android.content.Intent.EXTRA_TEXT);
+        File imageDir = new File(imageDirName);
+        File[] imageFiles = imageDir.listFiles();
+        for(int i=0; i<imageFiles.length; i++)
+        {
+            images.add(BitmapFactory.decodeFile(imageFiles[i].getAbsolutePath()));
+        }
 
         displayed_image = (ImageView)findViewById(R.id.CurrentPageView);
-        int imageResource = getResources().getIdentifier(images.get(image_index), null, getPackageName());
-        Drawable res = getResources().getDrawable(imageResource);
-        displayed_image.setImageDrawable(res);
+        displayed_image.setImageBitmap(images.get(0));
     }
 
 
@@ -85,16 +88,12 @@ public class ViewAlbumActivity extends ActionBarActivity {
             if ((velocityX < 0) && (image_index < (images.size()-1)))
             {
                 image_index = image_index + 1;
-                int imageResource = getResources().getIdentifier(images.get(image_index), null, getPackageName());
-                Drawable res = getResources().getDrawable(imageResource);
-                displayed_image.setImageDrawable(res);
+                displayed_image.setImageBitmap(images.get(image_index));
             }
             else if ((velocityX > 0) && (image_index > 0))
             {
                 image_index = image_index - 1;
-                int imageResource = getResources().getIdentifier(images.get(image_index), null, getPackageName());
-                Drawable res = getResources().getDrawable(imageResource);
-                displayed_image.setImageDrawable(res);
+                displayed_image.setImageBitmap(images.get(image_index));
             }
             return true;
         }

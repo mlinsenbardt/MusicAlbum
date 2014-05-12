@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Layout;
@@ -24,12 +26,17 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
+
+import static android.os.Environment.getExternalStorageDirectory;
 
 public class MainActivity extends ActionBarActivity {
     private static final int CAMERA_REQUEST = 1888;
     private ImageView imageView;
     public SQLiteHelper dbhelper;
+
+    private static int TAKE_PICTURE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -193,10 +200,33 @@ public class MainActivity extends ActionBarActivity {
                     composer = editText2.getText().toString();
                     notes = editText3.getText().toString();
 
-                    dbhelper.insert(title, composer, notes);
+                     /* Create new folder under sdcard/.... */
+                    File folder = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + title);
+                    if(!folder.exists()) {
+                        folder.mkdirs();
+                        Toast.makeText(getApplicationContext(), "Folder created:" + folder, Toast.LENGTH_LONG).show();
+                    }
+
+                    else{
+                        Toast.makeText(getApplicationContext(), "Folder:" + folder + " already exists. Update available.", Toast.LENGTH_LONG).show();
+                    }
+
+                    String path;
+                    path = folder.getPath();
+                    Toast.makeText(getApplicationContext(), "Folder: " + path, Toast.LENGTH_LONG).show();
+
+                    dbhelper.insert(title, composer, notes, path);
+
+                    /*Run camera app and store the pic data in created folder */
                     Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                    String imgName = System.currentTimeMillis() + ".jpg";
+                    Uri myUri = Uri.fromFile(new File(folder + "/" + imgName));
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,myUri);
+                    startActivityForResult(cameraIntent, TAKE_PICTURE);
+
                     dialog.dismiss();
+
+                    Toast.makeText(getApplicationContext(), "picture: " + myUri + " stored", Toast.LENGTH_LONG).show();
                 }
                 else{
                     Toast.makeText(getApplicationContext(), "Please enter title", Toast.LENGTH_SHORT).show();
@@ -264,8 +294,8 @@ public class MainActivity extends ActionBarActivity {
                     notes = editText3.getText().toString();
 
                     dbhelper.update(title, newTitle, composer, notes);
-                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                    //Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    //startActivityForResult(cameraIntent, CAMERA_REQUEST);
                     dialog.dismiss();
                 }
                 else{
@@ -285,11 +315,4 @@ public class MainActivity extends ActionBarActivity {
 
         builder.show();
     }
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            imageView.setImageBitmap(photo);
-        }
-    }
-
 }
