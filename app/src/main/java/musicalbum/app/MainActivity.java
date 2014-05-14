@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -71,8 +72,11 @@ public class MainActivity extends ActionBarActivity {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                ArrayList<String> dirList = dbhelper.getPaths();
+                String images_path = dirList.get(position);
                 Intent intent = new Intent(getApplicationContext(), ViewAlbumActivity.class);
-                intent.putExtra(android.content.Intent.EXTRA_TEXT, Integer.toString(position));
+                intent.putExtra(android.content.Intent.EXTRA_TEXT, images_path);
                 startActivity(intent);
             }
         });
@@ -157,50 +161,33 @@ public class MainActivity extends ActionBarActivity {
         }
     }
     private void showNewDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("New Album");
 
-        final EditText editText1 = new EditText(this);
-        final EditText editText2 = new EditText(this);
-        final EditText editText3= new EditText(this);
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.activity_dialogue);
+        dialog.setTitle("New Album");
 
-        editText1.setWidth(210);
-        editText1.setHeight(100);
-        editText1.setHint("title");
-
-        editText2.setWidth(210);
-        editText2.setHeight(700);
-        editText2.setHint("composer");
-
-        editText3.setWidth(210);
-        editText3.setHeight(1300);
-        editText3.setHint("notes");
-
-        RelativeLayout layout = new RelativeLayout(this);
-
-        layout.addView(editText1);
-        layout.addView(editText2);
-        layout.addView(editText3);
-        builder.setView(layout);
-
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-
+        Button save = (Button) dialog.findViewById(R.id.save);
+        save.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which){
+            public void onClick(View v) {
 
-                //dialog.dismiss();
-                //Toast.makeText(getApplicationContext(), "Pushed button save", Toast.LENGTH_SHORT).show();
+                EditText editText1 = (EditText) dialog.findViewById(R.id.title);
+                EditText editText2 = (EditText) dialog.findViewById(R.id.composer);
+                EditText editText3 = (EditText) dialog.findViewById(R.id.notes);
+
+                dbhelper = new SQLiteHelper(getApplicationContext());
+                Toast.makeText(getApplicationContext(),"Pushed button save",Toast.LENGTH_SHORT).show();
                 String title;
                 String composer;
                 String notes;
+
                 if(editText1.getText().toString() !=null){
 
-                    Toast.makeText(getApplicationContext(), "Album saved", Toast.LENGTH_SHORT).show();
                     title = editText1.getText().toString();
                     composer = editText2.getText().toString();
                     notes = editText3.getText().toString();
 
-                     /* Create new folder under sdcard/.... */
+                 /* Create new folder under sdcard/.... */
                     File folder = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + title);
                     if(!folder.exists()) {
                         folder.mkdirs();
@@ -224,95 +211,79 @@ public class MainActivity extends ActionBarActivity {
                     cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,myUri);
                     startActivityForResult(cameraIntent, TAKE_PICTURE);
 
-                    dialog.dismiss();
-
                     Toast.makeText(getApplicationContext(), "picture: " + myUri + " stored", Toast.LENGTH_LONG).show();
                 }
                 else{
                     Toast.makeText(getApplicationContext(), "Please enter title", Toast.LENGTH_SHORT).show();
                 }
+
+                dialog.dismiss();
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
+        Button cancel = (Button) dialog.findViewById(R.id.cancel);
+        cancel.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(View v) {
+
                 Toast.makeText(getApplicationContext(),"Pushed button cancel",Toast.LENGTH_SHORT).show();
-                //dialog.dismiss();
+                dialog.dismiss();
             }
         });
 
-        builder.show();
+        dialog.show();
     }
 
     private void showEditDialog(final String title, String composer, String notes){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Edit Album");
 
-        final EditText editText1 = new EditText(this);
-        final EditText editText2 = new EditText(this);
-        final EditText editText3= new EditText(this);
+        final Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.activity_dialogue);
+        dialog.setTitle("Update Album");
 
-        editText1.setWidth(210);
-        editText1.setHeight(100);
-        editText1.setHint("title");
-        editText1.setText(title);
+        Button update = (Button) dialog.findViewById(R.id.save);
+        update.setText("Update");
 
-        editText2.setWidth(210);
-        editText2.setHeight(200);
-        editText2.setHint("composer");
-        editText2.setText(composer);
-
-        editText3.setWidth(210);
-        editText3.setHeight(300);
-        editText3.setHint("notes");
-        editText3.setText(notes);
-
-        RelativeLayout layout = new RelativeLayout(this);
-
-        layout.addView(editText1);
-        layout.addView(editText2);
-        layout.addView(editText3);
-        builder.setView(layout);
-
-        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
-
+        update.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which){
+            public void onClick(View v) {
 
-                //dialog.dismiss();
-                //Toast.makeText(getApplicationContext(), "Pushed button save", Toast.LENGTH_SHORT).show();
+                EditText editText1 = (EditText) dialog.findViewById(R.id.title);
+                EditText editText2 = (EditText) dialog.findViewById(R.id.composer);
+                EditText editText3 = (EditText) dialog.findViewById(R.id.notes);
+
+                dbhelper = new SQLiteHelper(getApplicationContext());
+                Toast.makeText(getApplicationContext(), "Pushed button update", Toast.LENGTH_SHORT).show();
                 String newTitle;
                 String composer;
                 String notes;
-                if(editText1.getText().toString() !=null){
 
-                    Toast.makeText(getApplicationContext(), "Album updated", Toast.LENGTH_SHORT).show();
+                if (editText1.getText().toString() != null) {
+
                     newTitle = editText1.getText().toString();
                     composer = editText2.getText().toString();
                     notes = editText3.getText().toString();
 
                     dbhelper.update(title, newTitle, composer, notes);
-                    //Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                    //startActivityForResult(cameraIntent, CAMERA_REQUEST);
-                    dialog.dismiss();
-                }
-                else{
+
+                } else {
                     Toast.makeText(getApplicationContext(), "Please enter title", Toast.LENGTH_SHORT).show();
                 }
+
+                dialog.dismiss();
             }
         });
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-
+        Button cancel = (Button) dialog.findViewById(R.id.cancel);
+        cancel.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(View v) {
+
                 Toast.makeText(getApplicationContext(),"Pushed button cancel",Toast.LENGTH_SHORT).show();
-                //dialog.dismiss();
+                dialog.dismiss();
             }
         });
 
-        builder.show();
+        dialog.show();
+
     }
 }

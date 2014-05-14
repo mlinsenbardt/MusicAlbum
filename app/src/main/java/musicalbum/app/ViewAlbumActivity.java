@@ -1,5 +1,6 @@
 package musicalbum.app;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
@@ -39,16 +40,17 @@ public class ViewAlbumActivity extends ActionBarActivity {
         image_index = 0;
 
         Bundle extras = getIntent().getExtras();
-        String imageDirName = extras.getString(android.content.Intent.EXTRA_TEXT);
+        String imageDirName = extras.getString(Intent.EXTRA_TEXT);
         File imageDir = new File(imageDirName);
         File[] imageFiles = imageDir.listFiles();
-        for(int i=0; i<imageFiles.length; i++)
+        for(int i=0; i<imageFiles.length;i++)
         {
             images.add(BitmapFactory.decodeFile(imageFiles[i].getAbsolutePath()));
         }
 
         displayed_image = (ImageView)findViewById(R.id.CurrentPageView);
         displayed_image.setImageBitmap(images.get(0));
+
     }
 
 
