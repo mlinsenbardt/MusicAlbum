@@ -88,7 +88,6 @@ public class MainActivity extends ActionBarActivity {
             menu.setHeaderTitle("Album");
             menu.add(0, v.getId(), 0, "Remove");
             menu.add(0, v.getId(), 0, "Edit");
-            menu.add(0, v.getId(), 0, "Show");
     }
 
     @Override
