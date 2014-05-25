@@ -18,4 +18,6 @@ pictures, they will return to the main activity, where they should be able to se
 arrangement as an item in the list. Some devices may need to reload the app for this to show
 up.
 
+License
 
+This app is licensed under the GNU General Public License
