@@ -20,4 +20,4 @@ up.
 
 ##License
 
-This app is licensed under the GNU General Public License
+This app is licensed under the [GNU General Public License] (http://opensource.org/licenses/GPL-2.0.php)
