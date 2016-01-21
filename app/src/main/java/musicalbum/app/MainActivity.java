@@ -104,6 +104,17 @@ public class MainActivity extends ActionBarActivity {
         if(item.getTitle()=="Remove")
         {
             //dbhelper = new SQLiteHelper(this);
+            //TODO: Find folder of the title and delete it and all it's contents
+            File folder = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + title);
+            if (folder.isDirectory())
+            {
+                String[] children = folder.list();
+                for (int i = 0; i < children.length; i++)
+                {
+                    new File(folder, children[i]).delete();
+                }
+                folder.delete();
+            }
             dbhelper.remove_item(title);
             Toast.makeText(getApplicationContext(), title, Toast.LENGTH_SHORT).show();
         }
@@ -263,7 +274,10 @@ public class MainActivity extends ActionBarActivity {
                     notes = editText3.getText().toString();
 
                     dbhelper.update(title, newTitle, composer, notes);
-
+                    //TODO: change the folder names
+                    File oldfile = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + title);
+                    File newfile = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + newTitle);
+                    oldfile.renameTo(newfile);
                 } else {
                     Toast.makeText(getApplicationContext(), "Please enter title", Toast.LENGTH_SHORT).show();
                 }
