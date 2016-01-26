@@ -26,6 +26,9 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+import com.commonsware.cwac.cam2.AbstractCameraActivity;
+import com.commonsware.cwac.cam2.CameraActivity;
+import com.commonsware.cwac.cam2.FlashMode;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,6 +37,10 @@ import static android.os.Environment.getExternalStorageDirectory;
 
 public class MainActivity extends ActionBarActivity {
     private static final int CAMERA_REQUEST = 1888;
+    private static final int REQUEST_PORTRAIT_RFC=1337;
+    private static final int REQUEST_PORTRAIT_FFC=REQUEST_PORTRAIT_RFC+1;
+    private static final int REQUEST_LANDSCAPE_RFC=REQUEST_PORTRAIT_RFC+2;
+    private static final int REQUEST_LANDSCAPE_FFC=REQUEST_PORTRAIT_RFC+3;
     private ImageView imageView;
     public SQLiteHelper dbhelper;
 
@@ -103,8 +110,6 @@ public class MainActivity extends ActionBarActivity {
         String notes = notesList.get(info.position);
         if(item.getTitle()=="Remove")
         {
-            //dbhelper = new SQLiteHelper(this);
-            //TODO: Find folder of the title and delete it and all it's contents
             File folder = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + title);
             if (folder.isDirectory())
             {
@@ -215,11 +220,17 @@ public class MainActivity extends ActionBarActivity {
                     dbhelper.insert(title, composer, notes, path);
 
                     /*Run camera app and store the pic data in created folder */
-                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    //TODO: use cwac2 for camera stuff
+
                     String imgName = System.currentTimeMillis() + ".jpg";
                     Uri myUri = Uri.fromFile(new File(folder + "/" + imgName));
+                    Intent cameraIntent = new CameraActivity.IntentBuilder(MainActivity.this)
+                            .facing(CameraActivity.Facing.BACK)
+                            .to(myUri)
+                            .debug()
+                            .build();
                     cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,myUri);
-                    startActivityForResult(cameraIntent, TAKE_PICTURE);
+                    startActivityForResult(cameraIntent, REQUEST_PORTRAIT_FFC);
 
                     Toast.makeText(getApplicationContext(), "picture: " + myUri + " stored", Toast.LENGTH_LONG).show();
                 }
@@ -243,7 +254,14 @@ public class MainActivity extends ActionBarActivity {
 
         dialog.show();
     }
+    @Override
+    protected void onActivityResult(final int requestCode,
+                                    final int resultCode,
+                                    final Intent data) {
+        if (requestCode == REQUEST_PORTRAIT_FFC) {
 
+        }
+    }
     private void showEditDialog(final String title, String composer, String notes){
 
         final Dialog dialog = new Dialog(this);
@@ -274,7 +292,6 @@ public class MainActivity extends ActionBarActivity {
                     notes = editText3.getText().toString();
 
                     dbhelper.update(title, newTitle, composer, notes);
-                    //TODO: change the folder names
                     File oldfile = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + title);
                     File newfile = new File(getExternalStorageDirectory()+"/MusicAlbums/" + "/" + newTitle);
                     oldfile.renameTo(newfile);

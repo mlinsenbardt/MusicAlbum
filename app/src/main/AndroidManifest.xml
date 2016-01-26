@@ -3,6 +3,7 @@
     package="musicalbum.app" >
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA"/>
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -34,6 +35,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="MainActivity" />
         </activity>
+        <activity
+            android:name="com.commonsware.cwac.cam2.CameraActivity"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>
