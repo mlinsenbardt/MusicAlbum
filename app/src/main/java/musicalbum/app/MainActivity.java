@@ -1,5 +1,6 @@
 package musicalbum.app;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -7,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Layout;
 import android.view.ContextMenu;
@@ -26,25 +26,22 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-import com.commonsware.cwac.cam2.AbstractCameraActivity;
-import com.commonsware.cwac.cam2.CameraActivity;
-import com.commonsware.cwac.cam2.FlashMode;
+
 
 import java.io.File;
 import java.util.ArrayList;
 
 import static android.os.Environment.getExternalStorageDirectory;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends Activity {
     private static final int CAMERA_REQUEST = 1888;
-    private static final int REQUEST_PORTRAIT_RFC=1337;
-    private static final int REQUEST_PORTRAIT_FFC=REQUEST_PORTRAIT_RFC+1;
-    private static final int REQUEST_LANDSCAPE_RFC=REQUEST_PORTRAIT_RFC+2;
-    private static final int REQUEST_LANDSCAPE_FFC=REQUEST_PORTRAIT_RFC+3;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
     private ImageView imageView;
     public SQLiteHelper dbhelper;
 
     private static int TAKE_PICTURE = 1;
+
+    private String mURI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +79,12 @@ public class MainActivity extends ActionBarActivity {
 
                 ArrayList<String> dirList = dbhelper.getPaths();
                 String images_path = dirList.get(position);
+                File imageDir = new File(images_path);
+                File[] imageFiles = imageDir.listFiles();
+                if(imageFiles.length == 0){
+                    Toast.makeText(getApplicationContext(), "No images in Album!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Intent intent = new Intent(getApplicationContext(), ViewAlbumActivity.class);
                 intent.putExtra(android.content.Intent.EXTRA_TEXT, images_path);
                 startActivity(intent);
@@ -170,6 +173,8 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             case R.id.action_settings:
                 return true;
+            case R.id.refresh_button:
+                this.onResume();
             default:
                 return super.onOptionsItemSelected(item);
 
@@ -220,19 +225,17 @@ public class MainActivity extends ActionBarActivity {
                     dbhelper.insert(title, composer, notes, path);
 
                     /*Run camera app and store the pic data in created folder */
-                    //TODO: use cwac2 for camera stuff
 
                     String imgName = System.currentTimeMillis() + ".jpg";
                     Uri myUri = Uri.fromFile(new File(folder + "/" + imgName));
-                    Intent cameraIntent = new CameraActivity.IntentBuilder(MainActivity.this)
-                            .facing(CameraActivity.Facing.BACK)
-                            .to(myUri)
-                            .debug()
-                            .build();
-                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT,myUri);
-                    startActivityForResult(cameraIntent, REQUEST_PORTRAIT_FFC);
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        mURI = folder.toString();
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, myUri);
+                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    }
 
-                    Toast.makeText(getApplicationContext(), "picture: " + myUri + " stored", Toast.LENGTH_LONG).show();
+
                 }
                 else{
                     Toast.makeText(getApplicationContext(), "Please enter title", Toast.LENGTH_SHORT).show();
@@ -254,13 +257,40 @@ public class MainActivity extends ActionBarActivity {
 
         dialog.show();
     }
+
+//    @Override
+//    public void onRestoreInstanceState(Bundle savedInstanceState) {
+//        mTextView.setText(savedInstanceState.getString(TEXT_VIEW_KEY));
+//    }
+//
+//    // invoked when the activity may be temporarily destroyed, save the instance state here
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("URI",mURI);
+    }
+
     @Override
     protected void onActivityResult(final int requestCode,
                                     final int resultCode,
                                     final Intent data) {
-        if (requestCode == REQUEST_PORTRAIT_FFC) {
-
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+//            Bundle extras = data.getExtras();
+//            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            String folder = mURI;
+            Toast.makeText(getApplicationContext(), "picture: " + folder + " stored", Toast.LENGTH_LONG).show();
+            //TODO:Now we need to parse the URI for the folder, create a new file in that folder and launch another camera intent
+            String imgName = System.currentTimeMillis() + ".jpg";
+            Uri myUri = Uri.fromFile(new File(folder + "/" + imgName));
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                mURI = folder.toString();
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, myUri);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
         }
+
     }
     private void showEditDialog(final String title, String composer, String notes){
 

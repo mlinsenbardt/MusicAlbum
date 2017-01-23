@@ -8,5 +8,6 @@
     <string name="title_activity_dialogue">DialogueActivity</string>
     <string name="new_album">New Album</string>
     <string name="title_activity_view_album">ViewAlbumActivity</string>
+    <string name="refresh_action">Refresh</string>
 
 </resources>

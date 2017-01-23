@@ -18,12 +18,13 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 import android.widget.Toast;
+import android.app.Activity;
 
 import java.io.File;
 import java.util.ArrayList;
 
 
-public class ViewAlbumActivity extends ActionBarActivity {
+public class ViewAlbumActivity extends Activity {
 
     private GestureDetectorCompat mDetector;
     private ArrayList<Bitmap> images = new ArrayList<Bitmap>();
@@ -43,6 +44,7 @@ public class ViewAlbumActivity extends ActionBarActivity {
         String imageDirName = extras.getString(Intent.EXTRA_TEXT);
         File imageDir = new File(imageDirName);
         File[] imageFiles = imageDir.listFiles();
+
         for(int i=0; i<imageFiles.length;i++)
         {
             images.add(BitmapFactory.decodeFile(imageFiles[i].getAbsolutePath()));

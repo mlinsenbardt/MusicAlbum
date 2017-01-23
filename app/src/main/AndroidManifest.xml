@@ -35,9 +35,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="MainActivity" />
         </activity>
-        <activity
-            android:name="com.commonsware.cwac.cam2.CameraActivity"
-            android:theme="@style/AppTheme"/>
+        <!--<activity-->
+            <!--android:name="com.commonsware.cwac.cam2.CameraActivity"-->
+            <!--android:theme="@style/AppTheme"/>-->
     </application>
 
 </manifest>
